@@ -16,7 +16,8 @@
 
 (ert-deftest linux-default-command ()
   (with-terminal-here-mocks
-   (mock (start-process "x-terminal-emulator" * "x-terminal-emulator"))
+   (mock (start-process (terminal-here-find-terminal) *
+                        (terminal-here-find-terminal)))
    (let ((system-type 'gnu/linux))
      (custom-reevaluate-setting 'terminal-here-terminal-command)
      (terminal-here-launch-in-directory "adir"))))
@@ -106,6 +107,6 @@
                 (setq launch-command command))))
     (validate-setq terminal-here-command-flag "-k")
     (terminal-here-launch-in-directory "/ssh:david@pi:/home/pi/")
-    (should (equal (car launch-command) "x-terminal-emulator"))
+    (should (equal (car launch-command) (terminal-here-find-terminal)))
     (should (equal (cadr launch-command) "-k"))
     (should (equal (caddr launch-command) "ssh"))))

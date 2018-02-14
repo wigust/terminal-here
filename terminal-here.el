@@ -30,6 +30,19 @@
   :group 'external
   :prefix "terminal-here-")
 
+(defcustom terminal-here-terminal-emulators
+  '("x-terminal-emulator" "sl" "urxvt" "gnome-terminal"
+    "xfce4-terminal" "konsole" "xterm")
+  "List of terminal emulators."
+  :group 'terminal-here
+  :type 'list)
+
+(defun terminal-here-find-terminal ()
+  (file-name-nondirectory
+   (cl-some (lambda (executable)
+              (executable-find executable))
+            terminal-here-terminal-emulators)))
+
 (defun terminal-here-default-terminal-command (_dir)
   "Pick a good default command to use for DIR."
   (cond
@@ -41,8 +54,7 @@
     (list "cmd.exe" "/C" "start" "cmd.exe"))
 
    ;; Probably X11!
-   (t '("x-terminal-emulator"))))
-
+   (t (list (terminal-here-find-terminal)))))
 
 (defcustom terminal-here-terminal-command
   #'terminal-here-default-terminal-command
