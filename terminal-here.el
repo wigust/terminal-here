@@ -114,15 +114,26 @@ If f attach to a `screen' session inside multiplexer."
 
 
 
+(defun terminal-here-current-directory (dir)
+  "Return current directory."
+  (file-name-nondirectory (directory-file-name dir)))
+
 (defun terminal-here-multiplexer-session (dir)
   "If new is t create a new multiplexer session called `dir'.
 
 If new is f attach to a multiplexer session called `dir'."
-  (let ((dir (file-name-nondirectory (directory-file-name dir))))
+  (let ((dir (terminal-here-current-directory dir)))
     (cond ((string-equal terminal-here-multiplexer "screen")
            (list (if terminal-here-multiplexer-new-session "-S" "-r") dir))
           ((string-equal terminal-here-multiplexer "tmux")
            (list "new-session" "-A" "-s" dir)))))
+
+(defun terminal-here-terminal-window-name (command dir &optional multiplexer)
+  "Return a window name. "
+  (let ((command (first command)))
+    (cond ((string-equal command "xterm")
+           (let ((name (list "-title" command)))
+             (if multiplexer (append name "-" multiplexer "-" dir) name))))))
 
 (defun terminal-here-multiplexer-command (dir)
   "Return a multiplexer command."
@@ -146,9 +157,12 @@ If new is f attach to a multiplexer session called `dir'."
                            (funcall terminal-here-terminal-command dir)
                          terminal-here-terminal-command)))
           (if multiplexer
-              `(,@command ,terminal-here-command-flag
-                          ,@(terminal-here-multiplexer-command dir))
-            command))))))
+              `(,@command
+                ,terminal-here-command-flag
+                ,@(terminal-here-terminal-window-name command dir multiplexer)
+                ,@(terminal-here-multiplexer-command dir))
+            `(,@command ,@(terminal-here-terminal-window-name
+                           command dir))))))))
 
 (defun terminal-here-launch-in-directory (dir &optional multiplexer)
   "Launch a terminal in directory DIR.
