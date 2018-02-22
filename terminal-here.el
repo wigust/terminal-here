@@ -91,6 +91,11 @@ Typically this is -e, gnome-terminal uses -x."
   :group 'terminal-here
   :type 'symbol)
 
+(defcustom terminal-here-scrollbar t
+  "If nil disable scroll for a terminal."
+  :group 'terminal-here
+  :type 'boolean)
+
 (defcustom terminal-here-multiplexers
   '("screen" "tmux")
   "List of terminal emulators."
@@ -126,10 +131,11 @@ If f attach to a `screen' session inside multiplexer."
 (defun terminal-here-terminal-options ()
   "Return options for a terminal."
   (cond ((string-equal (car terminal-here-terminal-emulators) "xterm")
-         (cond ((eq terminal-here-color 'light)
-                '("-bg" "white" "-fg" "black"))
-               ((eq terminal-here-color 'dark)
-                '("-bg" "black" "-fg" "white"))))))
+         `(,@(cond ((eq terminal-here-color 'light)
+                    '("-bg" "white" "-fg" "black"))
+                   ((eq terminal-here-color 'dark)
+                    '("-bg" "black" "-fg" "white")))
+           ,(if terminal-here-scrollbar "-sb" "+sb")))))
 
 (defun terminal-here-multiplexer-session (dir)
   "If new is t create a new multiplexer session called `dir'.
