@@ -128,12 +128,11 @@ If new is f attach to a multiplexer session called `dir'."
           ((string-equal terminal-here-multiplexer "tmux")
            (list "new-session" "-A" "-s" dir)))))
 
-(defun terminal-here-terminal-window-name (command dir &optional multiplexer)
+(defun terminal-here-terminal-window-name (command dir)
   "Return a window name. "
   (let ((command (first command)))
     (cond ((string-equal command "xterm")
-           (let ((name (list "-title" command)))
-             (if multiplexer (append name "-" multiplexer "-" dir) name))))))
+           (list "-title" command)))))
 
 (defun terminal-here-multiplexer-command (dir)
   "Return a multiplexer command."
@@ -158,8 +157,8 @@ If new is f attach to a multiplexer session called `dir'."
                          terminal-here-terminal-command)))
           (if multiplexer
               `(,@command
+                ,@(terminal-here-terminal-window-name command dir)
                 ,terminal-here-command-flag
-                ,@(terminal-here-terminal-window-name command dir multiplexer)
                 ,@(terminal-here-multiplexer-command dir))
             `(,@command ,@(terminal-here-terminal-window-name
                            command dir))))))))
