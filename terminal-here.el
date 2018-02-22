@@ -86,6 +86,11 @@ Typically this is -e, gnome-terminal uses -x."
   :group 'terminal-here
   :type 'string)
 
+(defcustom terminal-here-color 'dark
+  "Color theme for a terminal."
+  :group 'terminal-here
+  :type 'symbol)
+
 (defcustom terminal-here-multiplexers
   '("screen" "tmux")
   "List of terminal emulators."
@@ -117,6 +122,14 @@ If f attach to a `screen' session inside multiplexer."
 (defun terminal-here-current-directory (dir)
   "Return current directory."
   (file-name-nondirectory (directory-file-name dir)))
+
+(defun terminal-here-terminal-options ()
+  "Return options for a terminal."
+  (cond ((string-equal (car terminal-here-terminal-emulators) "xterm")
+         (cond ((eq terminal-here-color 'light)
+                '("-bg" "white" "-fg" "black"))
+               ((eq terminal-here-color 'dark)
+                '("-bg" "black" "-fg" "white"))))))
 
 (defun terminal-here-multiplexer-session (dir)
   "If new is t create a new multiplexer session called `dir'.
@@ -154,14 +167,16 @@ If new is f attach to a multiplexer session called `dir'."
                                            multiplexer))
      (t (let ((command (if (functionp terminal-here-terminal-command)
                            (funcall terminal-here-terminal-command dir)
-                         terminal-here-terminal-command)))
+                         terminal-here-terminal-command))
+              (options (terminal-here-terminal-options)))
           (if multiplexer
               `(,@command
                 ,@(terminal-here-terminal-window-name command dir)
+                ,@options
                 ,terminal-here-command-flag
                 ,@(terminal-here-multiplexer-command dir))
-            `(,@command ,@(terminal-here-terminal-window-name
-                           command dir))))))))
+            `(,@command ,@options ,@(terminal-here-terminal-window-name
+                                     command dir))))))))
 
 (defun terminal-here-launch-in-directory (dir &optional multiplexer)
   "Launch a terminal in directory DIR.
