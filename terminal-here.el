@@ -151,7 +151,9 @@ If new is f attach to a multiplexer session called `dir'."
   "Return a window name. "
   (let ((command (first command)))
     (cond ((string-equal command "xterm")
-           (list "-title" command)))))
+           (list "-title" (mapconcat 'identity
+                                     (list command dir)
+                                     " "))))))
 
 (defun terminal-here-multiplexer-command (dir)
   "Return a multiplexer command."
