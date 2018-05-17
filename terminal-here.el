@@ -228,14 +228,16 @@ Given a tramp path returns the local part, otherwise returns nil."
      (user-error (format "No `%S' is set." ',symbol))))
 
 ;;;###autoload
-(defun terminal-here-launch (&optional multiplexer)
+(defun terminal-here-launch (&optional directory multiplexer)
   "Launch a terminal in the current working directory.
 
 This is the directory of the current buffer unless you have
 changed it by running `cd'."
-  (interactive)
+  (interactive
+   (list (if current-prefix-arg (read-directory-name "Directory: ")
+           default-directory)))
   (when multiplexer (terminal-here-not-null-symbol terminal-here-multiplexer))
-  (terminal-here-launch-in-directory default-directory multiplexer))
+  (terminal-here-launch-in-directory directory multiplexer))
 
 ;;;###autoload
 (defalias 'terminal-here 'terminal-here-launch)
