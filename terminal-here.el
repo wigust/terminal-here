@@ -18,6 +18,7 @@
 ;;; Code:
 
 (require 'cl-lib)
+(require 's)
 
 ;; TODO: it would be nice not to need to load all of tramp just for the file
 ;; name parsing. I'm not sure if that's possible though.
@@ -237,7 +238,19 @@ changed it by running `cd'."
    (list (if current-prefix-arg (read-directory-name "Directory: ")
            default-directory)))
   (when multiplexer (terminal-here-not-null-symbol terminal-here-multiplexer))
-  (terminal-here-launch-in-directory directory multiplexer))
+  (if (and (string-prefix-p "/ssh:" directory)
+           (s-contains? "|" directory))
+      (let ((ssh+sudo (split-string directory "|")))
+        (terminal-here-launch-in-directory
+         (mapconcat 'identity (list "/ssh:"
+                                    (cadr (split-string (car ssh+sudo) ":"))
+                                    ":/home/sup")
+                    "")
+         multiplexer)
+        (start-process "xdotool" nil (expand-file-name "~/bin/sudo-to-user-web")
+                       (car (split-string (nth 1 (split-string (cadr ssh+sudo) ":"))
+                                          "@"))))
+    (terminal-here-launch-in-directory directory multiplexer)))
 
 ;;;###autoload
 (defalias 'terminal-here 'terminal-here-launch)
