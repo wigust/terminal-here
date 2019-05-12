@@ -240,7 +240,10 @@ changed it by running `cd'."
   (when multiplexer (terminal-here-not-null-symbol terminal-here-multiplexer))
   (if (and (string-prefix-p "/ssh:" directory)
            (s-contains? "|" directory))
-      (let ((ssh+sudo (split-string directory "|")))
+      (let* ((ssh+sudo (split-string directory "|"))
+             (user (car (split-string (nth 1 (split-string (cadr ssh+sudo) ":"))
+                                      "@")))
+             (directory (nth 2 (split-string (cadr ssh+sudo) ":"))))
         (terminal-here-launch-in-directory
          (mapconcat 'identity (list "/ssh:"
                                     (cadr (split-string (car ssh+sudo) ":"))
@@ -248,8 +251,7 @@ changed it by running `cd'."
                     "")
          multiplexer)
         (start-process "xdotool" nil (expand-file-name "~/bin/sudo-to-user-web")
-                       (car (split-string (nth 1 (split-string (cadr ssh+sudo) ":"))
-                                          "@"))))
+                       user directory))
     (terminal-here-launch-in-directory directory multiplexer)))
 
 ;;;###autoload
